@@ -141,7 +141,7 @@ hr { border-color: #c3dff5; }
 # ─── MongoDB Connection ────────────────────────────────────────────────────────
 @st.cache_resource
 def get_db():
-    client = MongoClient(st.secrets("MONGO_URI"))
+    client = MongoClient(st.secrets["MONGO_URI"])
     return client["chronic_care_db"]
 
 db = get_db()
