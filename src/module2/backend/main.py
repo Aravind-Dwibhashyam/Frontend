@@ -24,7 +24,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from routes import patients, diseases, diagnoses, metrics, episodes, risks, plans, adherence, integrations
+from routes import patients, diseases, diagnoses, metrics, episodes, risks, plans, adherence, integrations, demographics
 from middleware.error_handler import custom_error_handler
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -41,6 +41,7 @@ app.include_router(risks.router)
 app.include_router(plans.router)
 app.include_router(adherence.router)
 app.include_router(integrations.router)
+app.include_router(demographics.router)
 
 @app.get("/")
 async def root():

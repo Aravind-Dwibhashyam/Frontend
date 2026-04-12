@@ -20,13 +20,17 @@ export default function PatientDetail() {
     try {
       const res = await api.get(`/patients/${id}`);
       setPatient(res.data.patient);
+      
+      const visitsRes = await api.get(`/patients/${id}/visits`);
+      
       setData({ 
-        diagnoses: res.data.diagnoses, 
-        metrics: res.data.metrics,
-        episodes: res.data.episodes,
-        risks: res.data.risks,
-        plans: res.data.plans,
-        adherence: res.data.adherence
+        diagnoses: res.data.diagnoses || [], 
+        metrics: res.data.metrics || [],
+        episodes: res.data.episodes || [],
+        risks: res.data.risks || [],
+        plans: res.data.plans || [],
+        adherence: res.data.adherence || [],
+        visits: visitsRes.data || []
       });
     } catch (err) {
       showToast('Error loading patient data', 'error');
@@ -40,6 +44,7 @@ export default function PatientDetail() {
     { id: 'risks', label: 'Risk Assessment' },
     { id: 'plans', label: 'Treatment Plan' },
     { id: 'adherence', label: 'Medication Adherence' },
+    { id: 'visits', label: 'Visits (M1)' },
   ];
 
   const handleInputChange = (e) => {
@@ -50,7 +55,6 @@ export default function PatientDetail() {
     e.preventDefault();
     try {
       const payload = { ...form };
-      // Clean up empty strings for optional Pydantic fields
       Object.keys(payload).forEach(key => {
         if (payload[key] === '') delete payload[key];
       });
@@ -75,7 +79,7 @@ export default function PatientDetail() {
         showToast('Medication Adherence saved', 'success');
       }
       setForm({});
-      e.target.reset(); // Clear the html form fields properly
+      e.target.reset();
       loadPatientData(); 
     } catch (err) {
       showToast('Error saving data', 'error');
@@ -119,28 +123,40 @@ export default function PatientDetail() {
         { header: 'Date', accessor: 'log_date' },
         { header: 'Status', accessor: 'status' },
       ];
+      case 'visits': return [
+        { header: 'Visit ID', accessor: 'visit_id' },
+        { header: 'Date', accessor: 'visit_date' },
+        { header: 'Department', accessor: 'department_id' },
+        { header: 'Physician', accessor: 'physician_id' },
+        { header: 'Status', accessor: 'status' },
+      ];
       default: return [];
     }
   };
 
-  if (!patient) return <div>Loading...</div>;
+  if (!patient) return <div className="p-6 text-slate-500">Loading patient details...</div>;
 
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <h1 className="text-2xl font-bold text-slate-800">{patient.name}</h1>
+        <h1 className="text-2xl font-bold text-slate-800">{patient.first_name} {patient.last_name}</h1>
         <div className="mt-2 flex space-x-6 text-sm text-slate-500">
           <p>ID: <span className="font-medium text-slate-700">{patient.patient_id}</span></p>
           <p>Age: <span className="font-medium text-slate-700">{patient.age}</span></p>
           <p>Gender: <span className="font-medium text-slate-700">{patient.gender}</span></p>
-          <p>DOB: <span className="font-medium text-slate-700">{patient.dob}</span></p>
+          <p>DOB: <span className="font-medium text-slate-700">{patient.date_of_birth ? new Date(patient.date_of_birth).toLocaleDateString() : 'N/A'}</span></p>
+          <p>Blood Group: <span className="font-medium text-slate-700">{patient.blood_group}</span></p>
+          <p>Phone: <span className="font-medium text-slate-700">{patient.phone}</span></p>
         </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200">
         <TabPanel tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
         <div className="p-6">
-          <h2 className="text-lg font-semibold text-slate-800 mb-4 capitalize">Add New {activeTab.replace('s', '')}</h2>
+          {activeTab !== 'visits' && (
+            <h2 className="text-lg font-semibold text-slate-800 mb-4 capitalize">Add New {activeTab.replace('s', '')}</h2>
+          )}
+          {activeTab !== 'visits' && (
           <form onSubmit={submitForm} className="mb-8 flex items-end gap-4 flex-wrap">
             {activeTab === 'diagnoses' && (
                <>
@@ -228,6 +244,7 @@ export default function PatientDetail() {
             )}
             <button type="submit" className="px-4 py-2 bg-teal-600 text-white rounded font-medium hover:bg-teal-700">Submit</button>
           </form>
+          )}
 
           <div>
              <h3 className="text-md font-medium text-slate-700 mb-3">Records</h3>

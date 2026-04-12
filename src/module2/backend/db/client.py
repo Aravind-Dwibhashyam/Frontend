@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     MONGO_URI: str = "mongodb+srv://abhinaviit2024_db_user:DMBS_A2@cluster1.uyxn7et.mongodb.net/"
     PORT: int = 8000
-    MODULE1_URL: str = "http://localhost:8001/api/module1"
+    MODULE1_URL: str = "https://patient-demographics-api.onrender.com/api"
     MODULE19_URL: str = "http://localhost:8019/api"
     MODULE25_URL: str = "http://localhost:8025/api"
     MODULE33_URL: str = "http://localhost:8033/api"

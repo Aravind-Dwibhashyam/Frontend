@@ -3,44 +3,33 @@ import { useNavigate } from 'react-router-dom';
 import DataTable from '../components/DataTable';
 import api from '../services/api';
 import { showToast } from '../components/ToastNotification';
-import { DownloadCloud, Plus } from 'lucide-react';
 
 export default function Patients() {
   const [patients, setPatients] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [module1Id, setModule1Id] = useState('');
   const navigate = useNavigate();
 
   const loadPatients = async () => {
+    setIsLoading(true);
     try {
       const res = await api.get('/patients');
-      setPatients(res.data);
+      // Format data for table display
+      const formatted = res.data.map(p => ({
+        ...p,
+        name: `${p.first_name} ${p.last_name}`,
+        dob: p.date_of_birth ? new Date(p.date_of_birth).toLocaleDateString() : 'N/A'
+      }));
+      setPatients(formatted);
     } catch (err) {
-      showToast('Failed to load patients', 'error');
+      showToast('Failed to load patients from Demographics API', 'error');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
     loadPatients();
   }, []);
-
-  const handlePullModule1 = async () => {
-    if (!module1Id) return;
-    setIsLoading(true);
-    try {
-      // Mocking fetch flow since we don't really have the module1 running
-      // and it will likely return a timeout or 500 error since network is not mocked there
-      // We will rely on real fetch logic, but if fails gracefully, we show error toast.
-      const res = await api.get(`/module1/patient/${module1Id}`);
-      showToast(res.data.message || 'Patient successfully imported', 'success');
-      setModule1Id('');
-      loadPatients();
-    } catch (err) {
-      showToast('Failed to fetch from Module-1', 'error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const columns = [
     { header: 'Patient ID', accessor: 'patient_id' },
@@ -55,33 +44,19 @@ export default function Patients() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Patient Registry</h1>
-          <p className="mt-1 text-sm text-slate-500">Manage chronic disease patients imported from Module 1.</p>
-        </div>
-        
-        <div className="flex items-center space-x-3 bg-white p-2 rounded-lg border border-slate-200 shadow-sm">
-          <input 
-            type="text" 
-            placeholder="M1 Patient ID" 
-            value={module1Id}
-            onChange={(e) => setModule1Id(e.target.value)}
-            className="w-32 px-3 py-1.5 text-sm border border-slate-200 rounded outline-none focus:border-teal-500"
-          />
-          <button 
-            onClick={handlePullModule1}
-            disabled={isLoading}
-            className="flex items-center px-3 py-1.5 bg-teal-600 text-white text-sm font-medium rounded hover:bg-teal-700 transition"
-          >
-            <DownloadCloud size={16} className="mr-2" />
-            Pull from M1
-          </button>
+          <p className="mt-1 text-sm text-slate-500">Live feed from Patient Demographics Module.</p>
         </div>
       </div>
 
-      <DataTable 
-        columns={columns} 
-        data={patients} 
-        onRowClick={(row) => navigate(`/patients/${row.patient_id}`)} 
-      />
+      {isLoading ? (
+        <div className="text-center py-10 text-slate-500">Loading patients from Module 1...</div>
+      ) : (
+        <DataTable 
+          columns={columns} 
+          data={patients} 
+          onRowClick={(row) => navigate(`/patients/${row.patient_id}`)} 
+        />
+      )}
     </div>
   );
 }
