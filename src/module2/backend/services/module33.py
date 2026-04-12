@@ -1,6 +1,6 @@
 import httpx
 from db.client import settings
-from .module1 import log_integration
+from .demographics import log_integration
 import asyncio
 
 async def send_progression_to_module33(patient_id: str, diagnosis_id: str, disease_name: str, treatment_plan: str, history: str):

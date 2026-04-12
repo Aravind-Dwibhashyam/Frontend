@@ -1,7 +1,7 @@
 import httpx
 from typing import Optional, Dict, Any, List
 from db.client import settings
-from .module1 import log_integration  # Wait, I am going to delete module1.py, let's redefine it here
+
 
 from db.client import get_database
 from models.integration_log import IntegrationLogCreate

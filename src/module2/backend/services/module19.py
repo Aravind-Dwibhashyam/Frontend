@@ -1,6 +1,6 @@
 import httpx
 from db.client import settings
-from .module1 import log_integration
+from .demographics import log_integration
 import asyncio
 
 async def send_prescription_to_module19(patient_id: str, plan_id: str, medications: str, doctor_id: str):
