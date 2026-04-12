@@ -1,0 +1,10 @@
+import urllib.request, json
+res = urllib.request.urlopen("http://localhost:8000/api/patients/PT-001")
+data = json.loads(res.read())
+print(f"Patient: {data['patient']['name']}")
+print(f"Diagnoses: {len(data['diagnoses'])}")
+print(f"Metrics: {len(data['metrics'])}")
+print(f"Episodes: {len(data['episodes'])}")
+print(f"Risks: {len(data['risks'])}")
+print(f"Plans: {len(data['plans'])}")
+print(f"Adherences: {len(data['adherence'])}")
