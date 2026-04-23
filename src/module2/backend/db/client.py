@@ -1,5 +1,6 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic_settings import BaseSettings
+import certifi
 
 class Settings(BaseSettings):
     MONGO_URI: str = "mongodb+srv://abhinaviit2024_db_user:DMBS_A2@cluster1.uyxn7et.mongodb.net/"
@@ -22,7 +23,7 @@ class MongoDB:
 db_config = MongoDB()
 
 async def connect_to_mongo():
-    db_config.client = AsyncIOMotorClient(settings.MONGO_URI)
+    db_config.client = AsyncIOMotorClient(settings.MONGO_URI, tlsCAFile=certifi.where())
     db_config.db = db_config.client.chronic_care
     print("Connected to MongoDB")
 

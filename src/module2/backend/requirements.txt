@@ -6,3 +6,4 @@ pydantic-settings
 httpx
 python-jose[cryptography]
 python-dotenv
+certifi
