@@ -23,8 +23,14 @@ class MongoDB:
 db_config = MongoDB()
 
 async def connect_to_mongo():
-    db_config.client = AsyncIOMotorClient(settings.MONGO_URI, tlsCAFile=certifi.where())
+    db_config.client = AsyncIOMotorClient(
+        settings.MONGO_URI,
+        tlsCAFile=certifi.where(),
+        serverSelectionTimeoutMS=10000,
+    )
     db_config.db = db_config.client.chronic_care
+    # Verify connection actually works
+    await db_config.client.admin.command('ping')
     print("Connected to MongoDB")
 
 async def close_mongo_connection():
@@ -33,4 +39,13 @@ async def close_mongo_connection():
         print("Closed connection to MongoDB")
 
 def get_database():
+    if db_config.db is None:
+        # Lazy reconnect if startup connection failed
+        db_config.client = AsyncIOMotorClient(
+            settings.MONGO_URI,
+            tlsCAFile=certifi.where(),
+            serverSelectionTimeoutMS=10000,
+        )
+        db_config.db = db_config.client.chronic_care
+        print("Lazy-connected to MongoDB")
     return db_config.db
