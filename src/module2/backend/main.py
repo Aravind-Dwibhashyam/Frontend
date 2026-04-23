@@ -3,12 +3,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from db.client import connect_to_mongo, close_mongo_connection
 from db.init import init_indexes
 from contextlib import asynccontextmanager
+import os
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup actions
-    await connect_to_mongo()
-    await init_indexes()
+    # Startup actions — wrapped so server starts even if DB is slow
+    try:
+        await connect_to_mongo()
+        await init_indexes()
+    except Exception as e:
+        print(f"WARNING: Startup DB init failed: {e}")
+        print("Server will start anyway — DB will connect on first request")
     yield
     # Shutdown actions
     await close_mongo_connection()
@@ -47,3 +52,7 @@ app.include_router(demographics.router)
 async def root():
     return {"message": "Welcome to ChronicCare Module 2 API"}
 
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
